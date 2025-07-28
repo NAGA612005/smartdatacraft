@@ -2,8 +2,8 @@ streamlit
 pandas
 matplotlib
 seaborn
-beautifulsoup4
 pdfplumber
+beautifulsoup4
 unidecode
 langchain
 langchain-google-genai
