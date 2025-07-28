@@ -84,7 +84,7 @@ def build_gemini_qa_tool(file_path, api_key):
 
 # ------------------- STREAMLIT UI -------------------
 st.set_page_config(page_title="SmartDataCraft ", layout="wide")
-st.title("SmartDataCraft ")
+st.title("SmartDataCraft\U0001F916")
 
 file = st.file_uploader("\U0001F4C1 Upload any unstructured data file", type=["csv", "xlsx", "json", "txt", "pdf", "html", "xml"])
 
@@ -110,6 +110,13 @@ if file:
                 custom_val = st.text_input(f"Enter custom value for `{col}`:", key=f"custom_{col}")
                 if custom_val:
                     df[col].fillna(custom_val, inplace=True)
+                # ----------- FEATURE ENGINEERING: COLUMN REMOVAL -------------
+        st.markdown("### 🧱 Remove Unwanted Columns")
+        cols_to_remove = st.multiselect("Select columns to remove:", df.columns)
+        if cols_to_remove:
+            df.drop(columns=cols_to_remove, inplace=True)
+            st.success(f"Removed columns: {', '.join(cols_to_remove)}")
+
 
         cleaned = clean_dataframe(df)
         st.subheader("\U0001F9FD Cleaned Data")
