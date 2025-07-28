@@ -7,3 +7,4 @@ pdfplumber
 unidecode
 langchain
 langchain-google-genai
+faiss-cpu
