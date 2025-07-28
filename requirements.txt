@@ -1,0 +1,9 @@
+streamlit
+pandas
+matplotlib
+seaborn
+beautifulsoup4
+pdfplumber
+unidecode
+langchain
+langchain-google-genai
