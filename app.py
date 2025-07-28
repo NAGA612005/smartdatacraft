@@ -17,6 +17,7 @@ from langchain.document_loaders import TextLoader
 from langchain.memory import ConversationBufferMemory
 import os
 import tempfile
+import asyncio
 
 # ------------------- CLEANING UTILS -------------------
 def clean_text(val):
@@ -61,10 +62,10 @@ def load_file(file):
         raise Exception("Unsupported file type")
 
 # ------------------- RAG USING GEMINI -------------------
-import asyncio
-
 def build_gemini_qa_tool(file_path, api_key):
-    if not asyncio.get_event_loop().is_running():
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
         asyncio.set_event_loop(asyncio.new_event_loop())
 
     loader = TextLoader(file_path)
@@ -76,27 +77,26 @@ def build_gemini_qa_tool(file_path, api_key):
     vectordb = FAISS.from_documents(texts, embeddings)
     retriever = vectordb.as_retriever()
 
-    gemini = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=api_key)
+    gemini = ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key="AIzaSyC2Z9xqIOx4BR4sjCX0Bt1sHYDZNGquMng", temperature=0.5)
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
     rag_chain = RetrievalQA.from_chain_type(llm=gemini, retriever=retriever, memory=memory)
     return rag_chain
-
 
 # ------------------- STREAMLIT UI -------------------
 st.set_page_config(page_title="SmartDataCraft ", layout="wide")
 st.title("SmartDataCraft ")
 
-file = st.file_uploader("📁 Upload any unstructured data file", type=["csv", "xlsx", "json", "txt", "pdf", "html", "xml"])
+file = st.file_uploader("\U0001F4C1 Upload any unstructured data file", type=["csv", "xlsx", "json", "txt", "pdf", "html", "xml"])
 
 if file:
     try:
         df = load_file(file)
-        st.subheader("📄 Raw Data")
+        st.subheader("\U0001F4C4 Raw Data")
         st.dataframe(df.head())
 
         cols_with_null = [col for col in df.columns if df[col].isnull().any()]
         for col in cols_with_null:
-            st.markdown(f"### 🛠️ Handle Missing Values in `{col}`")
+            st.markdown(f"### \U0001F6E0️ Handle Missing Values in `{col}`")
             method = st.selectbox(f"Choose method for `{col}`:", ["Drop", "Mean", "Median", "Mode", "Custom"], key=col)
             if method == "Drop":
                 df = df[df[col].notnull()]
@@ -112,13 +112,13 @@ if file:
                     df[col].fillna(custom_val, inplace=True)
 
         cleaned = clean_dataframe(df)
-        st.subheader("🧽 Cleaned Data")
+        st.subheader("\U0001F9FD Cleaned Data")
         st.dataframe(cleaned.head())
 
-        st.download_button("📥 Download Cleaned CSV", cleaned.to_csv(index=False), "cleaned.csv", "text/csv")
+        st.download_button("\U0001F4E5 Download Cleaned CSV", cleaned.to_csv(index=False), "cleaned.csv", "text/csv")
 
         # ----------- RAG AI CHAT -------------
-        if st.checkbox("🤖 Chat with the raw file using Gemini RAG"):
+        if st.checkbox("\U0001F916 Chat with the raw file using Gemini RAG"):
             gemini_key = "AIzaSyC2Z9xqIOx4BR4sjCX0Bt1sHYDZNGquMng"
             if gemini_key:
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as temp_file:
@@ -134,7 +134,7 @@ if file:
                     st.success(result)
 
         # ----------- ADVANCED VISUALIZATION -------------
-        if st.checkbox("📊 Data Visualization"):
+        if st.checkbox("\U0001F4CA Data Visualization"):
             chart_type = st.selectbox("Choose Chart Type", [
                 "Correlation Heatmap",
                 "Bar Chart",
