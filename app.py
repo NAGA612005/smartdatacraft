@@ -84,19 +84,27 @@ def build_gemini_qa_tool(file_path, api_key):
 
 # ------------------- STREAMLIT UI -------------------
 st.set_page_config(page_title="SmartDataCraft ", layout="wide")
-st.title("SmartDataCraft\U0001F916")
+st.title("SmartDataCraft \U0001F916")
 
 file = st.file_uploader("\U0001F4C1 Upload any unstructured data file", type=["csv", "xlsx", "json", "txt", "pdf", "html", "xml"])
 
 if file:
     try:
         df = load_file(file)
-        st.subheader("\U0001F4C4 Raw Data")
+        st.subheader("📄 Raw Data")
         st.dataframe(df.head())
 
+        # ----------- FEATURE ENGINEERING: COLUMN REMOVAL -------------
+        st.markdown("### 🧱 Remove Unwanted Columns")
+        cols_to_remove = st.multiselect("Select columns to remove from the dataset:", df.columns, key="remove_columns")
+        if cols_to_remove:
+            df.drop(columns=cols_to_remove, inplace=True)
+            st.success(f"Removed columns: {', '.join(cols_to_remove)}")
+
+        # ----------- HANDLE MISSING VALUES -------------
         cols_with_null = [col for col in df.columns if df[col].isnull().any()]
         for col in cols_with_null:
-            st.markdown(f"### \U0001F6E0️ Handle Missing Values in `{col}`")
+            st.markdown(f"### 🛠️ Handle Missing Values in `{col}`")
             method = st.selectbox(f"Choose method for `{col}`:", ["Drop", "Mean", "Median", "Mode", "Custom"], key=col)
             if method == "Drop":
                 df = df[df[col].notnull()]
@@ -111,11 +119,7 @@ if file:
                 if custom_val:
                     df[col].fillna(custom_val, inplace=True)
                 # ----------- FEATURE ENGINEERING: COLUMN REMOVAL -------------
-        st.markdown("### 🧱 Remove Unwanted Columns")
-        cols_to_remove = st.multiselect("Select columns to remove:", df.columns)
-        if cols_to_remove:
-            df.drop(columns=cols_to_remove, inplace=True)
-            st.success(f"Removed columns: {', '.join(cols_to_remove)}")
+        
 
 
         cleaned = clean_dataframe(df)
