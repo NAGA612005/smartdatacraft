@@ -61,7 +61,12 @@ def load_file(file):
         raise Exception("Unsupported file type")
 
 # ------------------- RAG USING GEMINI -------------------
+import asyncio
+
 def build_gemini_qa_tool(file_path, api_key):
+    if not asyncio.get_event_loop().is_running():
+        asyncio.set_event_loop(asyncio.new_event_loop())
+
     loader = TextLoader(file_path)
     documents = loader.load()
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
@@ -71,10 +76,11 @@ def build_gemini_qa_tool(file_path, api_key):
     vectordb = FAISS.from_documents(texts, embeddings)
     retriever = vectordb.as_retriever()
 
-    gemini = ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key="AIzaSyC2Z9xqIOx4BR4sjCX0Bt1sHYDZNGquMng")
+    gemini = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=api_key)
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
     rag_chain = RetrievalQA.from_chain_type(llm=gemini, retriever=retriever, memory=memory)
     return rag_chain
+
 
 # ------------------- STREAMLIT UI -------------------
 st.set_page_config(page_title="SmartDataCraft ", layout="wide")
